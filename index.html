@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>To-Do List</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+            background-color: black;
+            color: white;
+        }
+        #taskList {
+            list-style-type: none;
+            padding: 0;
+            width: 300px; /* Ширина для всех устройств */
+        }
+        .task {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin: 10px 0;
+            padding: 15px;
+            background-color: #333;
+            border-radius: 5px;
+        }
+        input[type="text"] {
+            padding: 10px;
+            width: 300px; /* Ширина для всех устройств */
+            margin-bottom: 10px;
+            border: none;
+            border-radius: 5px;
+        }
+        button {
+            padding: 10px;
+            background-color: #555;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #777;
+        }
+    </style>
+</head>
+<body>
+
+<h1>To-Do List</h1>
+<input type="text" id="taskInput" placeholder="Введите задачу">
+<button onclick="addTask()">Добавить</button>
+<button onclick="clearTasks()">Очистить все</button>
+
+<ul id="taskList"></ul>
+
+<script>
+    window.onload = loadTasks;
+
+    function addTask() {
+        const taskInput = document.getElementById('taskInput');
+        const taskText = taskInput.value.trim();
+        
+        if (taskText) {
+            if (Array.from(document.querySelectorAll('#taskList li')).some(task => task.firstChild.textContent.trim() === taskText)) {
+                alert("Эта задача уже существует!");
+                return;
+            }
+
+            const timestamp = new Date().toLocaleString();
+            const li = document.createElement('li');
+            li.className = 'task';
+            li.innerHTML = `${taskText} <span style="font-size: 0.8em; color: #aaa;">(${timestamp})</span> <button onclick="removeTask(this)">Удалить</button>`;
+            document.getElementById('taskList').appendChild(li);
+            taskInput.value = '';
+            taskInput.focus(); // Вернуть фокус на поле ввода
+            saveTasks(); // Сохранить задачи
+        }
+    }
+
+    function removeTask(button) {
+        const task = button.parentElement;
+        task.remove();
+        saveTasks(); // Сохранить изменения
+    }
+
+    function clearTasks() {
+        document.getElementById('taskList').innerHTML = '';
+        localStorage.removeItem('tasks'); // Очистить локальное хранилище
+    }
+
+    function saveTasks() {
+        const tasks = Array.from(document.querySelectorAll('#taskList li')).map(task => {
+            const taskText = task.firstChild.textContent.trim();
+            const timestamp = task.querySelector('span').textContent;
+            return { text: taskText, time: timestamp };
+        });
+        localStorage.setItem('tasks', JSON.stringify(tasks));
+    }
+
+    function loadTasks() {
+        const tasks = JSON.parse(localStorage.getItem('tasks')) || [];
+        tasks.forEach(({ text, time }) => {
+            const li = document.createElement('li');
+            li.className = 'task';
+            li.innerHTML = `${text} <span style="font-size: 0.8em; color: #aaa;">(${time})</span> <button onclick="removeTask(this)">Удалить</button>`;
+            document.getElementById('taskList').appendChild(li);
+        });
+    }
+</script>
+
+</body>
+</html>
